@@ -3,7 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/jzelinskie/geddit"
+	"github.com/nlopes/slack"
+	"io/ioutil"
 )
+
+func getSlackToken() string {
+	dat, err := ioutil.ReadFile("slack-token")
+	if err != nil {
+		fmt.Println("Cannot read slack token")
+		panic(err)
+	}
+	return string(dat)
+}
 
 func main() {
 	session, err := geddit.NewLoginSession("login", "password", "gedditAgent v1")
