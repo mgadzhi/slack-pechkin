@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/jzelinskie/geddit"
+	"github.com/mgadzhi/slack-pechkin/reddit"
 	"github.com/nlopes/slack"
 	"io/ioutil"
+	"strings"
 )
 
 func getSlackToken() string {
@@ -13,17 +14,24 @@ func getSlackToken() string {
 		fmt.Println("Cannot read slack token")
 		panic(err)
 	}
-	return string(dat)
+	return strings.TrimSpace(string(dat))
 }
 
 func main() {
-	session, err := geddit.NewLoginSession("login", "password", "gedditAgent v1")
-	fmt.Println(session)
-	fmt.Println(err)
+	r := reddit.NewReddit()
+	submissions := r.GetLastSubmissions("programming")
 
-	subOpts := geddit.ListingOptions{
-		Limit: 10,
+	slackToken := getSlackToken()
+	fmt.Println(slackToken)
+	api := slack.New(slackToken)
+	fmt.Println(api)
+	postParams := slack.PostMessageParameters{
+		AsUser: true,
 	}
-	nnFeed, err := session.SubredditSubmissions("neuralnetworks", geddit.NewSubmissions, subOpts)
-	fmt.Println(nnFeed)
+	for i, s := range submissions {
+		fmt.Println(i, s)
+		channelID, timestamp, err := api.PostMessage("main", s, postParams)
+		fmt.Println(channelID, timestamp, err)
+	}
+
 }
