@@ -47,7 +47,7 @@ func main() {
 				fmt.Println(ev.Info)
 				rtm.NewOutgoingMessage("Privet!", slackChannel)
 			case *slack.MessageEvent:
-				newMsg := rtm.NewOutgoingMessage(":padazzhi:", "C3SAHQACF")
+				newMsg := rtm.NewOutgoingMessage(":padazzhi:", ev.Channel)
 				fmt.Printf("%d %s %s %s", newMsg.ID, newMsg.Channel, newMsg.Text, newMsg.Type)
 				rtm.SendMessage(newMsg)
 			case *slack.InvalidAuthEvent:
