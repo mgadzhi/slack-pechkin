@@ -21,6 +21,7 @@ func main() {
 	r := reddit.NewReddit()
 	submissions := r.GetLastSubmissions("programming")
 
+    slackChannel := "prostokvashino"
 	slackToken := getSlackToken()
 	fmt.Println(slackToken)
 	api := slack.New(slackToken)
@@ -30,7 +31,7 @@ func main() {
 	}
 	for i, s := range submissions {
 		fmt.Println(i, s)
-		channelID, timestamp, err := api.PostMessage("main", s, postParams)
+		channelID, timestamp, err := api.PostMessage(slackChannel, s, postParams)
 		fmt.Println(channelID, timestamp, err)
 	}
 
