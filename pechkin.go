@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/mgadzhi/slack-pechkin/reddit"
+	// "github.com/mgadzhi/slack-pechkin/reddit"
 	"github.com/nlopes/slack"
 	"io/ioutil"
+	"log"
+	"os"
 	"strings"
 )
 
@@ -18,21 +20,41 @@ func getSlackToken() string {
 }
 
 func main() {
-	r := reddit.NewReddit()
-	submissions := r.GetLastSubmissions("programming")
+	// r := reddit.NewReddit()
+	// submissions := r.GetLastSubmissions("programming")
 
-    slackChannel := "prostokvashino"
+	slackChannel := "prostokvashino"
 	slackToken := getSlackToken()
 	fmt.Println(slackToken)
 	api := slack.New(slackToken)
 	fmt.Println(api)
-	postParams := slack.PostMessageParameters{
-		AsUser: true,
-	}
-	for i, s := range submissions {
-		fmt.Println(i, s)
-		channelID, timestamp, err := api.PostMessage(slackChannel, s, postParams)
-		fmt.Println(channelID, timestamp, err)
-	}
 
+	logger := log.New(os.Stderr, "Pechkin: ", log.Lshortfile|log.LstdFlags)
+	slack.SetLogger(logger)
+	api.SetDebug(true)
+
+	rtm := api.NewRTM()
+	go rtm.ManageConnection()
+
+	for {
+		select {
+		case msg := <-rtm.IncomingEvents:
+			fmt.Println("Event received:")
+			switch ev := msg.Data.(type) {
+			case *slack.HelloEvent:
+
+			case *slack.ConnectedEvent:
+				fmt.Println(ev.Info)
+				rtm.NewOutgoingMessage("Privet!", slackChannel)
+			case *slack.MessageEvent:
+				newMsg := rtm.NewOutgoingMessage(":padazzhi:", "C3SAHQACF")
+				fmt.Printf("%d %s %s %s", newMsg.ID, newMsg.Channel, newMsg.Text, newMsg.Type)
+				rtm.SendMessage(newMsg)
+			case *slack.InvalidAuthEvent:
+				return
+			default:
+
+			}
+		}
+	}
 }
