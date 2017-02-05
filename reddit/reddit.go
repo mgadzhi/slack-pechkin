@@ -4,6 +4,7 @@ import (
 	"github.com/jzelinskie/geddit"
 	"io/ioutil"
 	"strings"
+	"fmt"
 )
 
 func readCredentials() (string, string) {
@@ -30,7 +31,7 @@ func (r *Reddit) GetLastSubmissions(sub string) []string {
 	}
 	result := make([]string, len(submissions), cap(submissions))
 	for i, s := range submissions {
-		result[i] = s.URL
+		result[i] = fmt.Sprintf("%s: %s", s.Title, s.URL)
 	}
 	return result
 }

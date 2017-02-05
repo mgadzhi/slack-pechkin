@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	// "github.com/mgadzhi/slack-pechkin/reddit"
+	"github.com/mgadzhi/slack-pechkin/reddit"
 	"github.com/nlopes/slack"
 	"io/ioutil"
 	//"log"
 	//"os"
 	"strings"
+	"regexp"
 )
 
 func getSlackToken() string {
@@ -20,8 +21,7 @@ func getSlackToken() string {
 }
 
 func main() {
-	// r := reddit.NewReddit()
-	// submissions := r.GetLastSubmissions("programming")
+	r := reddit.NewReddit()
 
 	//slackChannel := "prostokvashino"
 	slackToken := getSlackToken()
@@ -45,9 +45,20 @@ func main() {
 			case *slack.MessageEvent:
 				fmt.Printf("Message text: %s\n", ev.Text)
 				if strings.Contains(ev.Text, rtm.GetInfo().User.ID) {
-				  newMsg := rtm.NewOutgoingMessage(":padazzhi:", ev.Channel)
-				  fmt.Printf("%d %s %s %s", newMsg.ID, newMsg.Channel, newMsg.Text, newMsg.Type)
-				  rtm.SendMessage(newMsg)
+					re := regexp.MustCompile("r/(\\S+)")
+					group := re.FindStringSubmatch(ev.Text)
+					if (len(group) == 2) {
+						fmt.Printf("Match: %s\n", group[1])
+						messageText := fmt.Sprintf("reddit %s", group[1])
+						submissions := r.GetLastSubmissions(group[1])
+						responseMsg := rtm.NewOutgoingMessage(messageText, ev.Channel)
+						submissionsMsg := rtm.NewOutgoingMessage(submissions[0], ev.Channel)
+						rtm.SendMessage(responseMsg)
+						rtm.SendMessage(submissionsMsg)
+					} else {
+						newMsg := rtm.NewOutgoingMessage("nope", ev.Channel)
+						rtm.SendMessage(newMsg)
+					}
 				}
 			case *slack.InvalidAuthEvent:
 				return
