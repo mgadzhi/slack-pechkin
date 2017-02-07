@@ -1,10 +1,10 @@
 package reddit
 
 import (
+	"fmt"
 	"github.com/jzelinskie/geddit"
 	"io/ioutil"
 	"strings"
-	"fmt"
 )
 
 func readCredentials() (string, string) {
@@ -44,4 +44,20 @@ func NewReddit() *Reddit {
 	}
 	subOpts := geddit.ListingOptions{Limit: 10}
 	return &Reddit{session, subOpts}
+}
+
+func (r *Reddit) GetLastSubmissionsAsync(sub string) <-chan string {
+	c := make(chan string)
+	go func() {
+		submissions, err := r.session.SubredditSubmissions(sub, geddit.NewSubmissions, r.opts)
+		if err != nil {
+			close(c)
+			return
+		}
+		for _, s := range submissions {
+			c <- fmt.Sprintf("%s: %s", s.Title, s.URL)
+		}
+		close(c)
+	}()
+	return c
 }

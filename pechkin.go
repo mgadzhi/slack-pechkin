@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	//"log"
 	//"os"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 func getSlackToken() string {
@@ -47,7 +47,7 @@ func main() {
 				if strings.Contains(ev.Text, rtm.GetInfo().User.ID) {
 					re := regexp.MustCompile("r/(\\S+)")
 					group := re.FindStringSubmatch(ev.Text)
-					if (len(group) == 2) {
+					if len(group) == 2 {
 						fmt.Printf("Match: %s\n", group[1])
 						messageText := fmt.Sprintf("reddit %s", group[1])
 						submissions := r.GetLastSubmissions(group[1])
