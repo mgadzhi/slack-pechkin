@@ -9,6 +9,7 @@ import (
 	//"os"
 	"regexp"
 	"strings"
+	"strconv"
 )
 
 func getSlackToken() string {
@@ -45,11 +46,16 @@ func main() {
 			case *slack.MessageEvent:
 				fmt.Printf("Message text: %s\n", ev.Text)
 				if strings.Contains(ev.Text, rtm.GetInfo().User.ID) {
-					re := regexp.MustCompile("r/(\\S+)")
+					re := regexp.MustCompile("r/(\\S+)\\D*(\\d)?")
 					group := re.FindStringSubmatch(ev.Text)
-					if len(group) == 2 {
+					if len(group) == 3 {
 						fmt.Printf("Match: %s\n", group[1])
-						submissionsChan := r.GetLastSubmissionsAsync(group[1])
+						fmt.Printf("Another match: %s\n", group[2])
+						submissionsNum, _ := strconv.Atoi(group[2])
+						if submissionsNum == 0 {
+						  submissionsNum = 5
+						}
+						submissionsChan := r.GetLastSubmissionsAsync(group[1], submissionsNum)
 						var submissionsMsg *slack.OutgoingMessage
 						for s := range submissionsChan {
 							submissionsMsg = rtm.NewOutgoingMessage(s, ev.Channel)
