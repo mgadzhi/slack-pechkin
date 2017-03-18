@@ -51,6 +51,7 @@ func (r *Reddit) GetLastSubmissionsAsync(sub string) <-chan string {
 	go func() {
 		submissions, err := r.session.SubredditSubmissions(sub, geddit.NewSubmissions, r.opts)
 		if err != nil {
+			c <- fmt.Sprintf(":padazzhi: Kakoj `%s` bljat? Ty 4o nesjosh bljat?", sub)
 			close(c)
 			return
 		}

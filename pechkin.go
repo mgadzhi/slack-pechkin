@@ -49,12 +49,12 @@ func main() {
 					group := re.FindStringSubmatch(ev.Text)
 					if len(group) == 2 {
 						fmt.Printf("Match: %s\n", group[1])
-						messageText := fmt.Sprintf("reddit %s", group[1])
-						submissions := r.GetLastSubmissions(group[1])
-						responseMsg := rtm.NewOutgoingMessage(messageText, ev.Channel)
-						submissionsMsg := rtm.NewOutgoingMessage(submissions[0], ev.Channel)
-						rtm.SendMessage(responseMsg)
-						rtm.SendMessage(submissionsMsg)
+						submissionsChan := r.GetLastSubmissionsAsync(group[1])
+						var submissionsMsg *slack.OutgoingMessage
+						for s := range submissionsChan {
+							submissionsMsg = rtm.NewOutgoingMessage(s, ev.Channel)
+							rtm.SendMessage(submissionsMsg)
+						}
 					} else {
 						newMsg := rtm.NewOutgoingMessage("nope", ev.Channel)
 						rtm.SendMessage(newMsg)
