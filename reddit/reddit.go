@@ -46,7 +46,8 @@ func NewReddit() *Reddit {
 	return &Reddit{session, subOpts}
 }
 
-func (r *Reddit) GetLastSubmissionsAsync(sub string) <-chan string {
+
+func (r *Reddit) GetLastSubmissionsAsync(sub string, number int) <-chan string {
 	c := make(chan string)
 	go func() {
 		submissions, err := r.session.SubredditSubmissions(sub, geddit.NewSubmissions, r.opts)
@@ -55,7 +56,8 @@ func (r *Reddit) GetLastSubmissionsAsync(sub string) <-chan string {
 			close(c)
 			return
 		}
-		for _, s := range submissions {
+		subset := submissions[0:number]
+		for _, s := range subset {
 			c <- fmt.Sprintf("%s: %s", s.Title, s.URL)
 		}
 		close(c)
