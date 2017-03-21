@@ -5,11 +5,9 @@ import (
 	"github.com/mgadzhi/slack-pechkin/reddit"
 	"github.com/nlopes/slack"
 	"io/ioutil"
-	//"log"
-	//"os"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func getSlackToken() string {
@@ -24,15 +22,10 @@ func getSlackToken() string {
 func main() {
 	r := reddit.NewReddit()
 
-	//slackChannel := "prostokvashino"
 	slackToken := getSlackToken()
 	fmt.Println(slackToken)
 	api := slack.New(slackToken)
 	fmt.Println(api)
-
-	//logger := log.New(os.Stderr, "Pechkin: ", log.Lshortfile|log.LstdFlags)
-	//slack.SetLogger(logger)
-	//api.SetDebug(true)
 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
@@ -41,8 +34,6 @@ func main() {
 		case msg := <-rtm.IncomingEvents:
 			fmt.Println("Event received")
 			switch ev := msg.Data.(type) {
-			case *slack.HelloEvent:
-			case *slack.ConnectedEvent:
 			case *slack.MessageEvent:
 				fmt.Printf("Message text: %s\n", ev.Text)
 				if strings.Contains(ev.Text, rtm.GetInfo().User.ID) {
@@ -53,7 +44,7 @@ func main() {
 						fmt.Printf("Another match: %s\n", group[2])
 						submissionsNum, _ := strconv.Atoi(group[2])
 						if submissionsNum == 0 {
-						  submissionsNum = 5
+							submissionsNum = 5
 						}
 						submissionsChan := r.GetLastSubmissionsAsync(group[1], submissionsNum)
 						var submissionsMsg *slack.OutgoingMessage
